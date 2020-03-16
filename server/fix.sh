@@ -18,7 +18,7 @@ rm -f $tempfile2
 echo "$USERNAME:x:$(id -u):" >> /etc/group
 
 echo "Reading credentials"
-RPassword=$(cat /tmp/shadow/shadow.crypt)
+RPassword=$PASSWORD
 
 echo "Creating shadow entries"
 tempfile3=$(mktemp)

@@ -1,28 +1,29 @@
 # Upstream Dockerfile https://github.com/rocker-org/rocker-versioned/blob/master/tidyverse/3.4.4/Dockerfile
-FROM rocker/tidyverse:3.4.4
+FROM rocker/tidyverse
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    nano=2.7.4-1 \
+    nano \
     libcurl4-openssl-dev \
     openssh-client \
-    less=481-2.1 \
-    htop=2.0.2-1 \
-    procps=2:3.3.12-3+deb9u1 \
-    net-tools=1.60+git20161116.90da8a0-1 \
-    rsync=3.1.2-1+deb9u1 \
-    gdebi-core=0.9.5.7+nmu1 \
-    libxt-dev=1:1.1.5-1 \
-    man-db=2.7.6.1-2 && \
+    less \
+    htop \
+    procps \
+    net-tools \
+    rsync \
+    gdebi-core \
+    libxt-dev \
+    man-db \
+    git-lfs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV USERNAME=rstudio
 
 # Setup various variables
 ENV TZ="Europe/Helsinki" \
-    HOME="/mnt/${NAME}-pvc" \
+    HOME="/home/${USERNAME}" \
     TINI_VERSION=v0.18.0 \
     APP_UID=999 \
     APP_GID=999 \
-    PKG_R_VERSION=3.4.4 \
-    PKG_RSTUDIO_VERSION=1.1.447 \
     PKG_SHINY_VERSION=1.5.7.907
 
 # Setup Tini, as S6 does not work when run as non-root users
@@ -30,20 +31,30 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN chmod +x /sbin/tini
 
 # Setup Shiny
-ADD https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-${PKG_SHINY_VERSION}-amd64.deb /tmp/shiny.deb
-RUN gdebi -n /tmp/shiny.deb && \
-    rm /tmp/shiny.deb && \
+RUN export ADD=shiny && bash /etc/cont-init.d/add && \
     install2.r -e shiny rmarkdown shinythemes shinydashboard && \
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     mkdir -p /var/log/shiny-server && \
     chown rstudio.rstudio /var/log/shiny-server && \
     chmod go+w -R /var/log/shiny-server /usr/local/lib/R /srv /var/lib/shiny-server
 
+# add requirements
+COPY requirements.txt /tmp/
+
+RUN cat /tmp/requirements.txt | xargs install2.r -e && rm /tmp/requirements.txt
 
 COPY rserver.conf rsession.conf /etc/rstudio/
 COPY start.sh /usr/local/bin/start.sh
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 COPY .Renviron $HOME/.Renviron
+
+# add git config and keys
+
+COPY flopo-at-github.pem $HOME/.ssh/id_rsa
+
+COPY gitconfig $HOME/.gitconfig
+
+RUN ssh-keyscan github.com > $HOME/.ssh/known_hosts
 
 #OpenShift additions
 RUN if [ "$USERNAME" != "rstudio" ] ; then useradd -m $USERNAME ; fi
@@ -70,6 +81,7 @@ RUN chmod ug+rw /etc/shadow
 RUN chgrp root /usr/local/bin/fix.sh \
     && chmod 774 /usr/local/bin/fix.sh
 
+RUN chgrp -R 0 $HOME && chmod -R g=u $HOME
 
 USER $APP_UID:$APP_GID
 WORKDIR $HOME

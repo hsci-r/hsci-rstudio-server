@@ -1,0 +1,11 @@
+reticulate
+fuzzyjoin
+zoo
+plotly
+lubridate
+jsonlite
+data.table
+sqldf
+ggridges
+ggthemes
+pscl
