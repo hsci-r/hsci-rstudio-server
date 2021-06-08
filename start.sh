@@ -4,6 +4,11 @@ echo "Adding users"
 /usr/local/bin/fix.sh
 echo "Done"
 
+echo "Adding SSH private key"
+echo "$SSH_RSA_KEY" > /home/rstudio/.ssh/id_rsa
+chmod 0600 /home/rstudio/.ssh/id_rsa
+echo "Done"
+
 set -e
 
 echo "Starting RSudio Server"

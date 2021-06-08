@@ -1,3 +1,8 @@
+tidyverse
+vroom
+here
+glue
+assertthat
 reticulate
 fuzzyjoin
 zoo
@@ -8,4 +13,11 @@ data.table
 sqldf
 ggridges
 ggthemes
+ggbeeswarm
 pscl
+dbplyr
+DBI
+tidytext
+sf
+tmap
+googlesheets4

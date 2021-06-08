@@ -31,7 +31,9 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN chmod +x /sbin/tini
 
 # Setup Shiny
-RUN export ADD=shiny && bash /etc/cont-init.d/add && \
+ADD https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-${PKG_SHINY_VERSION}-amd64.deb /tmp/shiny.deb
+RUN gdebi -n /tmp/shiny.deb && \
+    rm /tmp/shiny.deb && \
     install2.r -e shiny rmarkdown shinythemes shinydashboard && \
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     mkdir -p /var/log/shiny-server && \
@@ -50,11 +52,9 @@ COPY .Renviron $HOME/.Renviron
 
 # add git config and keys
 
-COPY flopo-at-github.pem $HOME/.ssh/id_rsa
-
 COPY gitconfig $HOME/.gitconfig
 
-RUN ssh-keyscan github.com > $HOME/.ssh/known_hosts
+RUN mkdir $HOME/.ssh && ssh-keyscan github.com > $HOME/.ssh/known_hosts
 
 #OpenShift additions
 RUN if [ "$USERNAME" != "rstudio" ] ; then useradd -m $USERNAME ; fi
