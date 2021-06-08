@@ -1,6 +1,8 @@
 # rstudio-openshift
 Run [RStudio](https://www.rstudio.com/) integrated development environment and [Shiny](https://www.rstudio.com/products/shiny/shiny-server/) application server on Red Hat OpenShift platform. This package is based on Kubernetes solution from https://github.com/Uninett/helm-charts
 
+Template for notebooks.csc.fi can be found from [template_imageready -branch](https://github.com/CSCfi/rstudio-openshift/tree/template_imageready)
+
 ## How to use this template:
 
 This template creates one deployment that uses two Docker builds. The other is for creating password hash as initcontainer before actual application container starts.
@@ -34,3 +36,7 @@ Process and apply template using default values from template and passing you ap
 You might also want to delete the persistent volume created by the setup by 
 * *oc delete pvc -l app=rstudio*
 * *oc delete project "project-name"*
+
+### Using with Allas object storage
+
+[How to use Allas from RStudio using AWS credentials and aws.s3 package](https://github.com/CSCfi/rstudio-openshift/blob/master/Allas.md)
